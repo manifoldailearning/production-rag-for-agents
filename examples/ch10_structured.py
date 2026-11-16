@@ -23,9 +23,7 @@ def main() -> None:
         reply = bot.ask(question, staff)
         docs_ok += expected.lower() in docs.lower()
         tool_ok += expected.lower() in reply.answer.text.lower()
-        print(
-            f"{reply.route:12} {textwrap.shorten(question, 50)}"
-        )
+        print(f"{reply.route:16}{textwrap.shorten(question, 46)}")
         if reply.follow_up:
             print(f"{'':4} then: {reply.follow_up}")
     n = len(STRUCTURED_QUESTIONS)

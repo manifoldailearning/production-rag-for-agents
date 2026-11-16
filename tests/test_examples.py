@@ -12,7 +12,7 @@ EXPECTED = {
     "ch07_grounding": "+ verify",
     "ch08_when_to_search": "router",
     "ch09_multihop": "multi-hop:     6/6 correct",
-    "ch10_structured": "records + docs: 8/8",
+    "ch10_structured": "records + docs: 9/9",
     "ch11_memory": "follow-ups, rewrite      7/7",
     "ch12_access": "pre-filter",
     "ch13_freshness": "drop superseded docs   8/8",

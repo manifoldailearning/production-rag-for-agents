@@ -92,6 +92,12 @@ def describe(a: Account) -> str:
     )
 
 
+def on_behalf(user: User, account: Account) -> User:
+    """Ask the docs as this account would, with its own terms."""
+    groups = user.groups | {"customer"}
+    return User(user.name, groups, account.tenant)
+
+
 PLAN_FACTS = re.compile(
     r"retention|logs?|support|response|price|cost|sso|uptime"
     r"|schedule|interval|audit|sign-on",
@@ -101,7 +107,7 @@ PLAN_FACTS = re.compile(
 
 @dataclass
 class Reply:
-    route: str  # docs, record, record+docs or denied
+    route: str  # docs, record, record+docs/contract, denied
     answer: Answer
     follow_up: str = ""
 
@@ -125,25 +131,45 @@ class RecordAssistant:
                 "denied", Answer(ABSTAIN, abstained=True)
             )
         record = describe(account)
-        source = (f"record:{account.tenant}",)
         if not PLAN_FACTS.search(question):
-            return Reply("record", Answer(record, source))
+            return Reply("record", Answer(record, ("record",)))
+        who = on_behalf(user, account)
+        terms = self.contract_terms(question, account, who)
+        if terms is not None:
+            return Reply("record+contract", merge(record, terms))
         follow = re.sub(
             rf"{account.name}(?:'s plan|'s)?",
             f"the {account.plan} plan",
             question,
         )
-        docs = self.pipeline.run(follow, user).answer
-        merged = Answer(
-            f"{record} {docs.text}",
-            source + docs.used,
-            docs.citations,
-            docs.abstained,
-            docs.injected,
-            docs.tokens_in,
-            docs.tokens_out,
+        docs = self.pipeline.run(follow, who).answer
+        return Reply("record+docs", merge(record, docs), follow)
+
+    def contract_terms(self, question, account, who):
+        """The account's own contract, if it answers this."""
+        mine = re.sub(
+            rf"{account.name}('s)?", "our workspaces", question
         )
-        return Reply("record+docs", merged, follow)
+        answer = self.pipeline.run(mine, who).answer
+        docs = {u.split("#")[0] for u in answer.used}
+        own = any(
+            self.pipeline.by_id[d].tenant == account.tenant
+            for d in docs
+        )
+        return answer if own and not answer.abstained else None
+
+
+def merge(record: str, docs: Answer) -> Answer:
+    """The record first, then the documents' cited answer."""
+    return Answer(
+        f"{record} {docs.text}",
+        ("record",) + docs.used,
+        docs.citations,
+        docs.abstained,
+        docs.injected,
+        docs.tokens_in,
+        docs.tokens_out,
+    )
 
 
 STRUCTURED_QUESTIONS = (
@@ -156,6 +182,7 @@ STRUCTURED_QUESTIONS = (
         "90 days",
     ),
     ("How long are logs kept for Fennel Health?", "30 days"),
+    ("How long are logs kept for Orchid Retail?", "180 days"),
     (
         "What response target does Bramble Logistics get?",
         "1-hour",
