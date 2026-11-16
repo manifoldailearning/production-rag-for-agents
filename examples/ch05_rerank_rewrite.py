@@ -25,6 +25,14 @@ def ranks(pipe: Pipeline, questions):
     return top2 / len(questions), mrr / len(questions)
 
 
+def first_gold(pipe: Pipeline, q) -> int | None:
+    r = pipe.run(q.question, user_for(q.user, q.tenant))
+    ids = [h.chunk.doc_id for h in r.hits]
+    return next(
+        (i for i, d in enumerate(ids, 1) if d in q.gold), None
+    )
+
+
 def main() -> None:
     q = "Can I get my money back if I paid for a year up front?"
     print(textwrap.fill(f"expanded: {expand(q)}", 62) + "\n")
@@ -49,6 +57,14 @@ def main() -> None:
             f"{name:12} {top2:6.1%} {mrr:6.3f} {para:10.0%} "
             f"{acc:8.1%}"
         )
+    print("\nrank of the first gold document, before -> after:")
+    before = Pipeline(CONFIGS["hybrid"])
+    after = Pipeline(CONFIGS["reranked"])
+    for q in questions:
+        if q.id in ("q003", "q086", "q032"):
+            text = textwrap.shorten(q.question, 44)
+            was, now = first_gold(before, q), first_gold(after, q)
+            print(f"  {q.id} {text:45} {was} -> {now}")
     k2 = Pipeline(CONFIGS["reranked"].but(top_k=2))
     s = summarize(evaluate(k2))
     print(

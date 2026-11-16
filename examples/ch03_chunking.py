@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import textwrap
 
-from ragsys.configs import BASELINE
+from ragsys.configs import BASELINE, PRODUCTION
 from ragsys.context import cost
 from ragsys.evals import (
     by_type,
     evaluate,
     load_questions,
+    split,
     summarize,
 )
 from ragsys.pipeline import Pipeline
@@ -38,6 +39,17 @@ def main() -> None:
             f"{strategy:9} {len(pipe.chunks):6} {avg:6.0f} "
             f"{acc:6.1%}  {cells}"
         )
+    print("\nsection chunk size: baseline vs production settings")
+    dev = split(questions, "dev")
+    for size in (30, 60, 160):
+        row = f"  {size:3} words"
+        for cfg in (BASELINE.but(chunker="section"), PRODUCTION):
+            pipe = Pipeline(cfg.but(chunk_size=size))
+            s = summarize(evaluate(pipe, dev))
+            row += (
+                f"   {s['accuracy']:6.1%} {s['tokens_in']:4} tok"
+            )
+        print(row)
     section = Pipeline(BASELINE.but(chunker="section"))
     row = next(
         c for c in section.chunks if c.id == "pricing-v3#0"

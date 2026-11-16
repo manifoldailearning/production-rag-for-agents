@@ -19,17 +19,19 @@ def support_by_position(pipe: Pipeline) -> None:
     for place in (0, 3, 7):
         order = others[:place] + [gold] + others[place:]
         passages = [pipe.passage(c) for c in order]
-        ev = gather(q, passages, MODELS["small"], frozenset())
-        mine = max(e.score for e in ev if e.chunk_id == gold.id)
-        print(
-            f"  gold at position {place + 1} of 8: "
-            f"support {mine:.2f}"
-        )
+        row = f"  gold at position {place + 1} of 8:"
+        for model in ("small", "large"):
+            ev = gather(q, passages, MODELS[model], frozenset())
+            mine = max(
+                e.score for e in ev if e.chunk_id == gold.id
+            )
+            row += f"  {model} {mine:.2f}"
+        print(row)
 
 
 def main() -> None:
     base = CONFIGS["reranked"]
-    print("best supporting sentence, small model:")
+    print("support for the best gold sentence, by position:")
     support_by_position(Pipeline(base))
     print(
         f"\n{'top_k':>5} {'order':>6} {'accuracy':>9}"

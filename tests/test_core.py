@@ -107,3 +107,15 @@ def test_verify_drops_unsupported_sentences():
 def test_claims_read_citations():
     out = claims("One fact. [a#0] Another. [b#1]")
     assert [c.cited for c in out] == ["a#0", "b#1"]
+
+
+def test_system_prompt_includes_only_active_rules():
+    from ragsys.prompts import messages, system_prompt
+
+    text = system_prompt(frozenset({"cite", "abstain"}))
+    assert "[passage id]" in text and "superseded" not in text
+    msgs = messages(
+        "Q?", [Passage("a#0", "Fact.", "Title")], frozenset()
+    )
+    assert msgs[1]["content"].endswith("Question: Q?")
+    assert "[a#0] Title" in msgs[1]["content"]
