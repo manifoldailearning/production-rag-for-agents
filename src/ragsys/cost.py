@@ -16,9 +16,9 @@ from ragsys.llm import MODELS
 from ragsys.pipeline import RagConfig, Result
 
 ASSUMED_MS = {
-    "lexical_per_1k_chunks": 1.0,
+    "lexical": 4.0,  # inverted index: nearly flat in corpus size
     "embed_query": 25.0,
-    "vector_per_1k_chunks": 2.0,
+    "vector_per_1k_chunks": 0.5,  # exact scan
     "rerank_per_pair": 8.0,
     "prefill_per_token": 0.05,
 }
@@ -35,17 +35,24 @@ class Cost:
 
 
 def estimate(
-    result: Result, config: RagConfig, corpus_chunks: int
+    result: Result,
+    config: RagConfig,
+    corpus_chunks: int,
+    scanned: float = 1.0,
 ) -> Cost:
-    """Latency per stage and dollars for one answered request."""
+    """Latency per stage and dollars for one answered request.
+
+    scanned is the share of vectors compared: 1.0 for exact
+    search, much less for an approximate index.
+    """
     a, model = ASSUMED_MS, MODELS[config.model]
     k = corpus_chunks / 1000
     stages: dict[str, float] = {}
     if config.retriever in ("bm25", "hybrid"):
-        stages["lexical"] = 2.0 + a["lexical_per_1k_chunks"] * k
+        stages["lexical"] = a["lexical"]
     if config.retriever in ("dense", "hybrid"):
         stages["embed"] = a["embed_query"]
-        stages["vector"] = a["vector_per_1k_chunks"] * k
+        stages["vector"] = a["vector_per_1k_chunks"] * k * scanned
     if config.rerank:
         stages["rerank"] = a["rerank_per_pair"] * len(result.hits)
     tin, tout = result.answer.tokens_in, result.answer.tokens_out

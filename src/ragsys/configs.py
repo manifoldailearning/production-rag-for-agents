@@ -56,7 +56,8 @@ LADDER = (
         rules=GUARDED,
         verify=True,
         acl=True,
-        order="edges",
+        drop_superseded=True,
+        tenant_first=True,
     ),
 )
 

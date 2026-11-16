@@ -10,6 +10,7 @@ that role for the simulated reranker and the simulated model.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from ragsys.embed import GENERIC, concepts
 from ragsys.text import STOPWORDS, stem, tokenize, words
@@ -19,7 +20,8 @@ _CODE = re.compile(r"\b[A-Za-z]*-?\d[\w.-]*\b")
 IGNORE = {"larkspur", "cloud", "i", "can", "does", "is", "how"}
 
 
-def entities(question: str) -> set[str]:
+@lru_cache(maxsize=50_000)
+def entities(question: str) -> frozenset[str]:
     """Names and codes the answer must be about."""
     found = set()
     first = question.split()[0] if question.split() else ""
@@ -29,7 +31,7 @@ def entities(question: str) -> set[str]:
             found.add(stem(word.lower()))
     for m in _CODE.finditer(question):
         found.add(m.group(0).lower().rstrip(".?"))
-    return {e for e in found if e not in STOPWORDS}
+    return frozenset(e for e in found if e not in STOPWORDS)
 
 
 NOISE = {"larkspur", "cloud"}
@@ -39,7 +41,11 @@ SHAPES = [  # question pattern -> what an answer looks like
         r"\d+\s?-?(business )?(day|hour|minute|week|month|year)"
         r"|one year|next business day|within",
     ),
-    (r"^how (many|much)|what does .* cost|\bcost\b", r"\$|\d"),
+    (r"^how many", r"\d"),
+    (
+        r"^how much|what does .* cost|\bcost\b|\bprice\b",
+        r"\$|\bcustom\b",
+    ),
     (
         r"^when\b",
         r"\b\d{1,2} [A-Z][a-z]+ 20\d\d|\b20\d\d\b|sundays?\b"
@@ -96,6 +102,7 @@ def coverage(
     return len(want & have) / len(want) if want else 0.0
 
 
+@lru_cache(maxsize=200_000)
 def relevance(
     question: str, passage: str, miss_penalty: float = 0.5
 ) -> float:

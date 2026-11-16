@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from functools import lru_cache
 
 from ragsys.text import stem, tokenize, words
 
@@ -193,6 +194,11 @@ _INDEX = {
 
 def concepts(text: str) -> Counter[str]:
     """Count concept mentions, matching multi-word phrases."""
+    return Counter(dict(_concepts(text)))
+
+
+@lru_cache(maxsize=50_000)
+def _concepts(text: str) -> tuple[tuple[str, int], ...]:
     raw = words(text) + (["$"] if "$" in text else [])
     toks = [stem(w) for w in raw]
     found: Counter[str] = Counter()
@@ -212,11 +218,16 @@ def concepts(text: str) -> Counter[str]:
                 )
             )
             found[concept] += hits
-    return +found
+    return tuple(sorted((+found).items()))
 
 
 def embed(text: str) -> Vector:
     """Map text to a unit-length sparse vector."""
+    return dict(_embed(text))
+
+
+@lru_cache(maxsize=50_000)
+def _embed(text: str) -> tuple[tuple[str, float], ...]:
     vec: Vector = {}
     for c, n in concepts(text).items():
         weight = CONCEPT_WEIGHT * (0.5 if c in GENERIC else 1.0)
@@ -224,7 +235,7 @@ def embed(text: str) -> Vector:
     for w, n in Counter(tokenize(text)).items():
         vec[f"w:{w}"] = WORD_WEIGHT * (1 + math.log(n))
     norm = math.sqrt(sum(v * v for v in vec.values())) or 1.0
-    return {k: v / norm for k, v in vec.items()}
+    return tuple((k, v / norm) for k, v in vec.items())
 
 
 def cosine(a: Vector, b: Vector) -> float:

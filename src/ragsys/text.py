@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 import re
+from functools import lru_cache
 
 STOPWORDS = frozenset(
     """a an and are as at be by can do does for from has have how
@@ -31,6 +32,7 @@ _WORD = re.compile(r"[a-z0-9]+(?:[-.][a-z0-9]+)*")
 _SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9|])")
 
 
+@lru_cache(maxsize=100_000)
 def stem(word: str) -> str:
     """A tiny suffix stripper; enough to match common forms."""
     if any(ch.isdigit() for ch in word) or len(word) <= 3:

@@ -41,6 +41,7 @@ class RagConfig:
     acl: bool = False
     acl_mode: str = "pre"  # filter before ranking, or "post"
     drop_superseded: bool = False
+    tenant_first: bool = False  # a tenant's own terms rank first
     model: str = "small"
     rules: frozenset[str] = field(default_factory=frozenset)
     verify: bool = False
@@ -112,7 +113,17 @@ class Pipeline:
             hits = [h for h in hits if h.chunk.doc_id in allowed]
         if cfg.rerank:
             hits = rerank(question, hits, cfg.candidates)
+        if cfg.tenant_first and user.tenant:
+            mine = [
+                h
+                for h in hits
+                if self.tenant_of(h) == user.tenant
+            ]
+            hits = mine + [h for h in hits if h not in mine]
         return query, hits
+
+    def tenant_of(self, hit: Hit) -> str:
+        return self.by_id[hit.chunk.doc_id].tenant
 
     def run(
         self, question: str, user: User | None = None
