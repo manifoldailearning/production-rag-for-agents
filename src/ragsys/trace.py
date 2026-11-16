@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections import Counter
 
+from ragsys.access import user_for
 from ragsys.evals import Question, is_correct
 from ragsys.pipeline import Pipeline, Result
 
@@ -36,10 +37,27 @@ def diagnose(q: Question, r: Result, pipe: Pipeline) -> str:
 
 
 def failure_profile(pipe: Pipeline, questions) -> Counter[str]:
-    from ragsys.access import user_for
-
     counts: Counter[str] = Counter()
     for q in questions:
         r = pipe.run(q.question, user_for(q.user, q.tenant))
         counts[diagnose(q, r, pipe)] += 1
     return counts
+
+
+def to_record(r: Result, pipe: Pipeline) -> dict:
+    """One structured log record per request, for replay."""
+    return {
+        "config": pipe.config.name,
+        "user": r.user.name,
+        "tenant": r.user.tenant,
+        "question": r.question,
+        "query": r.query,
+        "hits": [
+            [h.chunk.id, round(h.score, 3)]
+            for h in r.hits[: pipe.config.top_k]
+        ],
+        "context": [c.id for c in r.context],
+        "cited": list(r.answer.citations),
+        "abstained": r.answer.abstained,
+        "tokens": [r.answer.tokens_in, r.answer.tokens_out],
+    }

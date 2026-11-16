@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import textwrap
+
 from ragsys.access import user_for
 from ragsys.agent import MultiHopAgent
 from ragsys.configs import BASELINE, LADDER, PRODUCTION
@@ -13,7 +15,7 @@ from ragsys.evals import (
     summarize,
 )
 from ragsys.pipeline import Pipeline
-from ragsys.trace import failure_profile
+from ragsys.trace import failure_profile, to_record
 
 
 def agent_accuracy(questions) -> float:
@@ -52,10 +54,28 @@ def main() -> None:
             f"{d['injected'] + t['injected']:7}"
             f" {d['tokens_in']:7}"
         )
+    large = Pipeline(PRODUCTION.but(model="large"))
+    d = summarize(evaluate(large, dev))
+    t = summarize(evaluate(large, test))
+    print(
+        f"{'large model':11} {d['accuracy']:6.1%} "
+        f"{t['accuracy']:6.1%}"
+    )
     print(
         f"{'+ multi-hop':11} {agent_accuracy(dev):6.1%} "
         f"{agent_accuracy(test):6.1%}"
     )
+    pipe = Pipeline(PRODUCTION)
+    r = pipe.run(
+        "Who is our technical account manager?",
+        user_for("customer", "bramble"),
+    )
+    print()
+    for key, value in to_record(r, pipe).items():
+        text = textwrap.fill(
+            f"{key:9} {value}", 60, subsequent_indent=" " * 12
+        )
+        print(textwrap.indent(text, "  "))
 
 
 if __name__ == "__main__":

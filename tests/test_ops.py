@@ -119,3 +119,14 @@ def test_diagnose_labels_stages():
     q = next(x for x in load_questions() if x.id == "q003")
     r = pipe.run(q.question)
     assert diagnose(q, r, pipe) == "generation"
+
+
+def test_trace_record_is_replayable():
+    from ragsys.trace import to_record
+
+    pipe = Pipeline(PRODUCTION)
+    rec = to_record(
+        pipe.run("What is the Team plan price?"), pipe
+    )
+    assert rec["config"] == "production"
+    assert rec["context"] and rec["tokens"][0] > 0
