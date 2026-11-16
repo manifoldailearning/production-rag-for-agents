@@ -73,7 +73,10 @@ def main() -> None:
     print()
     for key, value in to_record(r, pipe).items():
         text = textwrap.fill(
-            f"{key:9} {value}", 60, subsequent_indent=" " * 12
+            f"{key:9} {value}",
+            60,
+            subsequent_indent=" " * 12,
+            break_on_hyphens=False,
         )
         print(textwrap.indent(text, "  "))
 
