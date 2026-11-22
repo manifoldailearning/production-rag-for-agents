@@ -37,8 +37,10 @@ class Question:
         return self.type in ABSTAIN_TYPES
 
 
-def load_questions() -> list[Question]:
-    path = resources.files("ragsys") / "data" / "questions.json"
+def load_questions(
+    name: str = "questions.json",
+) -> list[Question]:
+    path = resources.files("ragsys") / "data" / name
     rows = json.loads(path.read_text(encoding="utf-8"))
     return [
         Question(

@@ -1,4 +1,4 @@
-"""Chapter 16: find the failing stage, then climb the ladder."""
+"""Chapter 17: find the failing stage, then climb the ladder."""
 
 from __future__ import annotations
 

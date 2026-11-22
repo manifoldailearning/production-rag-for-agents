@@ -18,7 +18,8 @@ EXPECTED = {
     "ch13_freshness": "drop superseded docs   8/8",
     "ch14_safety": "quarantine at ingest",
     "ch15_cost": "IVF 5%",
-    "ch16_improvement_loop": "+ multi-hop",
+    "ch16_graphs": "graph router             5/6           4/4",
+    "ch17_improvement_loop": "+ multi-hop",
 }
 
 

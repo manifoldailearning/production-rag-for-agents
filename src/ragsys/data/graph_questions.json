@@ -1,0 +1,240 @@
+[
+ {
+  "id": "g01",
+  "type": "aggregate",
+  "question": "Which features are not available on the Starter plan?",
+  "gold": [
+   "pricing-v3",
+   "admin-guide",
+   "sla-uptime",
+   "connectors"
+  ],
+  "expected": [
+   [
+    "SSO",
+    "single sign-on"
+   ],
+   [
+    "audit log"
+   ],
+   [
+    "uptime"
+   ],
+   [
+    "Salesforce"
+   ],
+   [
+    "Stripe"
+   ]
+  ],
+  "wrong": [],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g02",
+  "type": "aggregate",
+  "question": "Which features are not available on the Team plan?",
+  "gold": [
+   "admin-guide"
+  ],
+  "expected": [
+   [
+    "audit log"
+   ]
+  ],
+  "wrong": [
+   "SSO",
+   "single sign-on"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g03",
+  "type": "aggregate",
+  "question": "Which features are available only on the Enterprise plan?",
+  "gold": [
+   "scim-provisioning",
+   "support-channels"
+  ],
+  "expected": [
+   [
+    "SCIM"
+   ],
+   [
+    "technical account manager"
+   ]
+  ],
+  "wrong": [
+   "SSO",
+   "single sign-on",
+   "audit log",
+   "larger worker",
+   "invoice"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g04",
+  "type": "aggregate",
+  "question": "Which plans include SSO, audit logs and larger workers?",
+  "gold": [
+   "pricing-v3",
+   "admin-guide",
+   "error-lk-5100"
+  ],
+  "expected": [
+   [
+    "Business"
+   ],
+   [
+    "Enterprise"
+   ]
+  ],
+  "wrong": [
+   "Starter",
+   "Team"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g05",
+  "type": "aggregate",
+  "question": "Which features and connectors changed in releases 4.4 to 4.6?",
+  "gold": [
+   "release-4-4",
+   "release-4-5",
+   "release-4-6"
+  ],
+  "expected": [
+   [
+    "Slack"
+   ],
+   [
+    "schema evolution"
+   ],
+   [
+    "SCIM"
+   ],
+   [
+    "ap-south"
+   ],
+   [
+    "Snowflake"
+   ]
+  ],
+  "wrong": [],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g06",
+  "type": "aggregate",
+  "question": "What does a Business workspace get that a Team workspace does not?",
+  "gold": [
+   "admin-guide",
+   "error-lk-5100"
+  ],
+  "expected": [
+   [
+    "audit log"
+   ],
+   [
+    "larger worker"
+   ]
+  ],
+  "wrong": [
+   "eu-west",
+   "SSO",
+   "single sign-on"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g07",
+  "type": "relationship",
+  "question": "Which plans can use the connector that gained bulk API 2.0 support in release 4.6?",
+  "gold": [
+   "release-4-6",
+   "connectors"
+  ],
+  "expected": [
+   [
+    "Team"
+   ],
+   [
+    "Business"
+   ],
+   [
+    "Enterprise"
+   ]
+  ],
+  "wrong": [
+   "Starter"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g08",
+  "type": "relationship",
+  "question": "What uptime do the plans that include larger workers commit to?",
+  "gold": [
+   "error-lk-5100",
+   "sla-uptime"
+  ],
+  "expected": [
+   [
+    "99.9 percent on Business"
+   ],
+   [
+    "99.95"
+   ]
+  ],
+  "wrong": [],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g09",
+  "type": "relationship",
+  "question": "Which releases changed the Business plan?",
+  "gold": [
+   "release-4-5"
+  ],
+  "expected": [
+   [
+    "4.5"
+   ]
+  ],
+  "wrong": [
+   "4.4",
+   "4.6"
+  ],
+  "user": "customer",
+  "tenant": ""
+ },
+ {
+  "id": "g10",
+  "type": "relationship",
+  "question": "Which releases changed the Team plan?",
+  "gold": [
+   "release-4-4"
+  ],
+  "expected": [
+   [
+    "4.4"
+   ]
+  ],
+  "wrong": [
+   "4.5",
+   "4.6"
+  ],
+  "user": "customer",
+  "tenant": ""
+ }
+]

@@ -16,8 +16,11 @@ to one you can defend in production, and measures every step:
   told them;
 - permissions and tenants, freshness, planted instructions and
   personal data;
-- latency, cost, approximate search, caching, failure diagnosis and
-  the improvement loop.
+- latency, cost, approximate search and caching;
+- a knowledge graph extracted from the documents, with provenance,
+  and a router that sends relationship and aggregation questions
+  to it and everything else to search;
+- failure diagnosis and the improvement loop.
 
 Everything runs offline. The knowledge base belongs to Larkspur
 Cloud, a **fictional** data-pipeline company, and the embedding model,
@@ -55,7 +58,7 @@ ragsys eval --config production --split test
 ## The configuration ladder
 
 `ragsys/configs.py` defines each step from the baseline to the
-production configuration. `examples/ch16_improvement_loop.py` prints
+production configuration. `examples/ch17_improvement_loop.py` prints
 the table below on a fixed dev/test split.
 
 | Step | Dev | Test | Leaks | Obeyed planted text |
@@ -87,11 +90,32 @@ the table below on a fixed dev/test split.
 | 13 Freshness | `freshness` | `ch13_freshness.py` |
 | 14 Planted instructions and personal data | `safety` | `ch14_safety.py` |
 | 15 Latency, cost and caching | `cost`, `ann`, `cache` | `ch15_cost.py` |
-| 16 Observability and the improvement loop | `trace`, `configs` | `ch16_improvement_loop.py` |
+| 16 Entities and graphs | `graph` | `ch16_graphs.py` |
+| 17 Observability and the improvement loop | `trace`, `configs` | `ch17_improvement_loop.py` |
 
 The data lives in `src/ragsys/data/`: 34 Markdown documents with
-metadata headers, and `questions.json`, the 90-question evaluation
-set with gold documents, required facts and forbidden facts.
+metadata headers; `questions.json`, the 90-question evaluation
+set with gold documents, required facts and forbidden facts; and
+`graph_questions.json`, ten aggregation and relationship questions
+used in Chapter 16.
+
+## When a graph pays off
+
+`examples/ch16_graphs.py` extracts entities and relations from
+every chunk, keeping the chunk each fact came from, and compares
+search with a graph router:
+
+| System | 10 graph questions | 90 original questions |
+|---|---|---|
+| search | 2/10 | 72/90 |
+| multi-hop agent | 2/10 | |
+| graph only | 9/10 | 29/90 |
+| graph router | 9/10 | 72/90 |
+
+The graph answers lists and relationships that search cannot, and
+loses badly when used for everything. The router sends only the
+question shapes a graph query fits, and the graph honors
+permissions and freshness because every edge keeps its source.
 
 ## License
 
