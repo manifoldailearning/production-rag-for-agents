@@ -90,7 +90,7 @@ the table below on a fixed dev/test split.
 | 13 Freshness | `freshness` | `ch13_freshness.py` |
 | 14 Planted instructions and personal data | `safety` | `ch14_safety.py` |
 | 15 Latency, cost and caching | `cost`, `ann`, `cache` | `ch15_cost.py` |
-| 16 Entities and graphs | `graph` | `ch16_graphs.py` |
+| 16 GraphRAG: entities and graphs | `graph` | `ch16_graphrag_basics.py`, `ch16_graphs.py` |
 | 17 Observability and the improvement loop | `trace`, `configs` | `ch17_improvement_loop.py` |
 
 The data lives in `src/ragsys/data/`: 34 Markdown documents with
@@ -100,6 +100,11 @@ set with gold documents, required facts and forbidden facts; and
 used in Chapter 16.
 
 ## When a graph pays off
+
+`examples/ch16_graphrag_basics.py` is GraphRAG in miniature: seven
+one-line documents, triples extracted from them, and a three-hop
+traversal that answers "Who must be told if Postgres goes down?",
+which keyword search cannot. It uses only the standard library.
 
 `examples/ch16_graphs.py` extracts entities and relations from
 every chunk, keeping the chunk each fact came from, and compares
